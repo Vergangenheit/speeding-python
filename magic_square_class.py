@@ -5,6 +5,14 @@ import re
 import sys
 from typing import List
 
+"""
+1- get sums (rows, columns , diagonals):
+2- from sums get the most common value(the target):
+3- get indices of rows, columns , diagonals who are off the target and by how much;
+4- put row sums, column sums and diagonal sums into a single iterable data structure;
+5- link sums to their elements;
+6- find a way to iterate over it;
+"""
 
 class MagicSquare:
     def __init__(self, arr: List[List]):
@@ -43,10 +51,24 @@ class MagicSquare:
         return x != common_val
 
     @staticmethod
+    def gap(x: int, common_val: int) -> int:
+        return abs(x - common_val)
+
+    @staticmethod
     def get_off_index(list_sum: List, common_val: int) -> List[int]:
         # extract index of row whose sum is != common_value
         output = [idx for idx, element in enumerate(list_sum) if MagicSquare.condition(element, common_val)]
-        return output
+        gaps = []
+        for out in output:
+            gaps.append(abs(list_sum[out] - common_val))
+        return output, gaps
+
+    def change_axes(self, index_row: int, index_col: int, target: int):
+        # change one of the values to achieve target
+        # ex: row
+        val: int = self.arr[index_row][index_col]
+
+
 
     def main(self):
         # Write your code here
@@ -64,12 +86,13 @@ class MagicSquare:
         self.get_common_val()
         print(f"Most common value is {self.common_val}")
         # extract rows who are off
-        off_row = MagicSquare.get_off_index(self.row_sums, self.common_val)
-        print(f"Off row indices are {off_row}")
-        off_col = MagicSquare.get_off_index(self.col_sums, self.common_val)
-        print(f"Off column indices are {off_col}")
-        off_diag = MagicSquare.get_off_index(self.diag_sums, self.common_val)
-        print(f"Off diagonals are {off_diag}")
+        off_row, row_gaps = MagicSquare.get_off_index(self.row_sums, self.common_val)
+        print(f"Off row indices are {off_row} by {row_gaps}")
+        off_col, col_gaps = MagicSquare.get_off_index(self.col_sums, self.common_val)
+        print(f"Off column indices are {off_col} by {col_gaps}")
+        off_diag, diag_gaps = MagicSquare.get_off_index(self.diag_sums, self.common_val)
+        print(f"Off diagonals are {off_diag} by {diag_gaps}")
+        self.change_axes(off_row[0], off_col[0], self.common_val)
 
 
 if __name__ == '__main__':
