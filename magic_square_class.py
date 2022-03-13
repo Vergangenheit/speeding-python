@@ -4,36 +4,52 @@ import random
 import re
 import sys
 from typing import List
+from collections import OrderedDict
 
 """
-1- get sums (rows, columns , diagonals):
+1- get sums (rows, columns , diagonals).
+put row sums, column sums and diagonal sums into a single iterable data structure linking sums to their elements;
 2- from sums get the most common value(the target):
 3- get indices of rows, columns , diagonals who are off the target and by how much;
-4- put row sums, column sums and diagonal sums into a single iterable data structure;
-5- link sums to their elements;
-6- find a way to iterate over it;
+4- find a way to iterate over iterable datastructure;
 """
+
 
 class MagicSquare:
     def __init__(self, arr: List[List]):
         self.common_val = None
         self.arr = arr
+        self.ds_row = []
+        self.ds_col = []
+        self.ds_diag = []
+        self.u_ds = []
 
     def get_rows_sum(self):
         self.row_sums = [sum(i) for i in self.arr]
+        for row in self.arr:
+            t = (sum(row), row)
+            self.ds_row.append(t)
+
         assert len(self.row_sums) == len(self.arr)
 
     def get_col_sums(self):
         self.col_sums = []
         for i in range(len(self.arr)):
-            self.col_sums.append(self.arr[0][i] + self.arr[1][i] + self.arr[2][i])
+            s: int = self.arr[0][i] + self.arr[1][i] + self.arr[2][i]
+            t = (s, [self.arr[0][i], self.arr[1][i], self.arr[2][i]])
+            self.ds_col.append(t)
+            self.col_sums.append(s)
 
         assert len(self.col_sums) == len(self.arr)
 
     def get_diags_sums(self):
         self.diag_sums = []
-        self.diag_sums.append(sum([self.arr[i][i] for i in range(len(self.arr))]))
-        self.diag_sums.append(sum(self.arr[i][len(self.arr) - 1 - i] for i in range(len(self.arr))))
+        lr_diag = [self.arr[i][i] for i in range(len(self.arr))]
+        rl_diag = [self.arr[i][len(self.arr) - 1 - i] for i in range(len(self.arr))]
+        self.diag_sums.append(sum(lr_diag))
+        self.diag_sums.append(sum(rl_diag))
+        self.ds_diag.append((sum(lr_diag), lr_diag))
+        self.ds_diag.append((sum(rl_diag), rl_diag))
 
         assert len(self.diag_sums) == 2
 
@@ -55,7 +71,7 @@ class MagicSquare:
         return abs(x - common_val)
 
     @staticmethod
-    def get_off_index(list_sum: List, common_val: int) -> List[int]:
+    def get_off_index(list_sum: List, common_val: int) -> (List[int], List[int]):
         # extract index of row whose sum is != common_value
         output = [idx for idx, element in enumerate(list_sum) if MagicSquare.condition(element, common_val)]
         gaps = []
@@ -63,12 +79,14 @@ class MagicSquare:
             gaps.append(abs(list_sum[out] - common_val))
         return output, gaps
 
+    def mesh_ds(self):
+        # put the three comprehensive datastructures together
+        self.u_ds = self.ds_row + self.ds_col + self.ds_diag
+
     def change_axes(self, index_row: int, index_col: int, target: int):
         # change one of the values to achieve target
         # ex: row
         val: int = self.arr[index_row][index_col]
-
-
 
     def main(self):
         # Write your code here
@@ -79,9 +97,9 @@ class MagicSquare:
         self.get_col_sums()
         # extract diagonal sums
         self.get_diags_sums()
-        print(self.row_sums)
-        print(self.col_sums)
-        print(self.diag_sums)
+        print(self.ds_row)
+        print(self.ds_col)
+        print(self.ds_diag)
         # extract most frequent value to aspire to
         self.get_common_val()
         print(f"Most common value is {self.common_val}")
@@ -92,7 +110,9 @@ class MagicSquare:
         print(f"Off column indices are {off_col} by {col_gaps}")
         off_diag, diag_gaps = MagicSquare.get_off_index(self.diag_sums, self.common_val)
         print(f"Off diagonals are {off_diag} by {diag_gaps}")
-        self.change_axes(off_row[0], off_col[0], self.common_val)
+        # self.change_axes(off_row[0], off_col[0], self.common_val)
+        self.mesh_ds()
+        print(self.u_ds)
 
 
 if __name__ == '__main__':
